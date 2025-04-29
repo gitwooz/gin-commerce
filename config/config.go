@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Port        string
-	JWTSecret   string
-	DatabaseURL string
+	Port         string
+	JWTSecret    string
+	DatabaseURL  string
+	DatabaseName string
 }
 
 func LoadConfig() *Config {
@@ -20,9 +21,10 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		Port:        getEnv("PORT", "8080"),
-		JWTSecret:   getEnv("JWT_SECRET", "your_jwt_secret"),
-		DatabaseURL: getEnv("DATABASE_URL", "your_database_url"),
+		Port:         getEnv("PORT", "8080"),
+		JWTSecret:    getEnv("JWT_SECRET", "your_jwt_secret"),
+		DatabaseURL:  getEnv("DATABASE_URL", "mongodb://localhost:27017"),
+		DatabaseName: getEnv("DATABASE_NAME", "gin-commerce"),
 	}
 }
 

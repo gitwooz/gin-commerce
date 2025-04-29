@@ -1,0 +1,76 @@
+openapi: 3.0.0
+info:
+  title: Go Gin App API
+  description: RESTful API for user authentication and management.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/auth/signup:
+    post:
+      summary: Sign up a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "1234567890"
+      responses:
+        '200':
+          description: OTP sent successfully
+  /api/auth/signin:
+    post:
+      summary: Sign in a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "1234567890"
+                otp:
+                  type: string
+                  example: "123456"
+      responses:
+        '200':
+          description: JWT token returned
+  /api/users/{id}:
+    get:
+      summary: Get user details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details retrieved
+    put:
+      summary: Update user details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "1234567890"
+      responses:
+        '200':
+          description: User updated successfully

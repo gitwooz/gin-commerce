@@ -1,61 +1,63 @@
 package services
 
 import (
-    "errors"
-    "sync"
+	"context"
+	"errors"
+	"time"
 
-    "github.com/gitwooz/go-gin-app/models"
+	"github.com/gitwooz/go-gin-app/models"
+	"github.com/gitwooz/go-gin-app/utils"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserService struct {
-    users map[string]*models.User
-    mu    sync.RWMutex
+	collection *mongo.Collection
 }
 
-func NewUserService() *UserService {
-    return &UserService{
-        users: make(map[string]*models.User),
-    }
+func NewUserService(databaseName string) *UserService {
+	return &UserService{
+		collection: utils.GetCollection(databaseName, "users"),
+	}
 }
 
-func (s *UserService) CreateUser(phoneNumber string) (*models.User, error) {
-    s.mu.Lock()
-    defer s.mu.Unlock()
+func (s *UserService) CreateUser(user *models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-    if _, exists := s.users[phoneNumber]; exists {
-        return nil, errors.New("user already exists")
-    }
-
-    user := &models.User{
-        PhoneNumber: phoneNumber,
-    }
-
-    s.users[phoneNumber] = user
-    return user, nil
+	_, err := s.collection.InsertOne(ctx, user)
+	return err
 }
 
-func (s *UserService) GetUser(phoneNumber string) (*models.User, error) {
-    s.mu.RLock()
-    defer s.mu.RUnlock()
-
-    user, exists := s.users[phoneNumber]
-    if !exists {
-        return nil, errors.New("user not found")
-    }
-
-    return user, nil
+func (s *UserService) GetUser(id string) (*models.User, error) {
+	return s.GetUserByID(id) // Alias for GetUserByID
 }
 
-func (s *UserService) UpdateUser(phoneNumber string, updatedUser models.User) error {
-    s.mu.Lock()
-    defer s.mu.Unlock()
+func (s *UserService) GetUserByID(id string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-    user, exists := s.users[phoneNumber]
-    if !exists {
-        return errors.New("user not found")
-    }
+	var user models.User
+	err := s.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
 
-    user.PhoneNumber = updatedUser.PhoneNumber
-    user.Password = updatedUser.Password
-    return nil
+	return &user, nil
+}
+
+func (s *UserService) UpdateUser(id string, updatedUser *models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := s.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": updatedUser})
+	return err
+}
+
+func (s *UserService) DeleteUser(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := s.collection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
 }
