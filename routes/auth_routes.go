@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"your_project/controllers"
+	"github.com/gitwooz/go-gin-app/controllers"
 )
 
 func AuthRoutes(router *gin.RouterGroup) {
-	authController := controllers.NewAuthController()
+	authController := controllers.AuthController{}
 
 	router.POST("/signup", authController.SignUp)
 	router.POST("/signin", authController.SignIn)

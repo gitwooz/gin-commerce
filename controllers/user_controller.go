@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go-gin-app/models"
-	"go-gin-app/services"
+	"github.com/gitwooz/go-gin-app/models"
+	"github.com/gitwooz/go-gin-app/services"
+	"github.com/gitwooz/go-gin-app/utils"
 )
 
 type UserController struct {
@@ -14,24 +15,24 @@ type UserController struct {
 
 func (uc *UserController) GetUser(c *gin.Context) {
 	userID := c.Param("id")
-	user, err := uc.UserService.GetUserByID(userID)
+	user, err := uc.UserService.GetUser(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.SendError(c, http.StatusNotFound, "User not found")
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	utils.SendResponse(c, http.StatusOK, "User retrieved successfully", user)
 }
 
 func (uc *UserController) UpdateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		utils.SendError(c, http.StatusBadRequest, "Invalid input")
 		return
 	}
 	userID := c.Param("id")
 	if err := uc.UserService.UpdateUser(userID, user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		utils.SendError(c, http.StatusInternalServerError, "Failed to update user")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+	utils.SendResponse(c, http.StatusOK, "User updated successfully", nil)
 }

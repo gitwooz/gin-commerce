@@ -18,17 +18,17 @@ func (ac *AuthController) SignUp(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, utils.ResponseUtil("Invalid input", nil))
+		utils.SendError(c, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
 	otp, err := ac.AuthService.GenerateOTP(input.PhoneNumber)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, utils.ResponseUtil("Error generating OTP", nil))
+		utils.SendError(c, http.StatusInternalServerError, "Error generating OTP")
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.ResponseUtil("OTP sent", gin.H{"otp": otp}))
+	utils.SendResponse(c, http.StatusOK, "OTP sent", gin.H{"otp": otp})
 }
 
 func (ac *AuthController) SignIn(c *gin.Context) {
@@ -38,15 +38,15 @@ func (ac *AuthController) SignIn(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, utils.ResponseUtil("Invalid input", nil))
+		utils.SendError(c, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
 	token, err := ac.AuthService.ValidateOTP(input.PhoneNumber, input.OTP)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, utils.ResponseUtil("Invalid OTP", nil))
+		utils.SendError(c, http.StatusUnauthorized, "Invalid OTP")
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.ResponseUtil("Sign in successful", gin.H{"token": token}))
+	utils.SendResponse(c, http.StatusOK, "Sign in successful", gin.H{"token": token})
 }
